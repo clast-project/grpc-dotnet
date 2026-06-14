@@ -1,0 +1,64 @@
+name: Clast CI
+
+# Build the Clast republish of Grpc.Auth (re-pointed to the locally-ported Clast.Google.Apis.Auth via a cross-repo
+# ProjectReference, so google-api-dotnet-client is checked out as a sibling). The dependency is taken from the PR's
+# branch if a same-named branch exists there (so coordinated cross-repo PRs validate together), otherwise main.
+# Builds with the Clast flag OFF (original identity) across netstandard2.0;net8.0;net10.0 — the net10.0 target runs
+# the IsAotCompatible analyzer. There is no Grpc.Auth.Tests project, so this is a build-only gate.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - name: Checkout grpc-dotnet
+        uses: actions/checkout@v6
+        with:
+          path: grpc-dotnet
+
+      - name: Resolve google-api-dotnet-client ref
+        id: dep
+        shell: bash
+        run: |
+          REF=main
+          HEAD="${{ github.head_ref }}"
+          if [ -n "$HEAD" ] && git ls-remote --exit-code --heads \
+            https://github.com/clast-project/google-api-dotnet-client.git "$HEAD" >/dev/null 2>&1; then
+            REF="$HEAD"
+          fi
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "Using google-api-dotnet-client@$REF"
+
+      - name: Checkout google-api-dotnet-client (dependency, as sibling)
+        uses: actions/checkout@v6
+        with:
+          repository: clast-project/google-api-dotnet-client
+          ref: ${{ steps.dep.outputs.ref }}
+          path: google-api-dotnet-client
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Build Grpc.Auth (all TFMs incl. net10.0 AOT analyzer)
+        shell: bash
+        working-directory: grpc-dotnet
+        run: dotnet build src/Grpc.Auth/Grpc.Auth.csproj -c Release

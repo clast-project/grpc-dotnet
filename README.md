@@ -1,3 +1,19 @@
+# Clast fork — Newtonsoft-free, AOT-ready republish of Grpc.Auth
+
+> This is the **`clast-project`** fork of [`grpc/grpc-dotnet`](https://github.com/grpc/grpc-dotnet). It republishes **only `Grpc.Auth`**, under a **`Clast.`** package-id prefix, re-pointed to **`Clast.Google.Apis.Auth`** (the Newtonsoft-free, source-generated `System.Text.Json` republish of `Google.Apis.Auth`) instead of the published Newtonsoft-based package, made **trimming/AOT-compatible**, with a **`net10.0`** target added. Namespaces and public type names are **unchanged**.
+>
+> **Why:** the published `Grpc.Auth` hard-binds the published `Google.Apis.Auth`, which collides (CS0433) with the renamed `Clast.Google.Apis.Auth`. Republishing it as `Clast.Grpc.Auth` lets `Clast.Google.Api.Gax.Grpc` — and the gRPC-based Cloud client libraries (e.g. `Google.Cloud.BigQuery.Storage.V1`) — be consumed under Native AOT with a fully Newtonsoft-free credential path.
+>
+> **Packages republished from this repository:**
+>
+> | Clast package | Upstream package |
+> |---|---|
+> | `Clast.Grpc.Auth` | `Grpc.Auth` |
+>
+> All other gRPC packages (`Grpc.Net.Client`, `Grpc.Core.Api`, `Grpc.AspNetCore`, …) are **out of scope** and are referenced as their published packages. The renaming/re-signing is gated behind an opt-in `-p:Clast=true` MSBuild flag (default builds keep the original identity). The full design notes and behavior-change catalogue live in the [`clast-project/google-api-dotnet-client`](https://github.com/clast-project/google-api-dotnet-client) repo (`PLAN.md`, `BEHAVIORAL-CHANGES.md`).
+
+---
+
 # gRPC for .NET
 
 gRPC is a modern, open source, high-performance remote procedure call (RPC) framework that can run anywhere. gRPC enables client and server applications to communicate transparently, and simplifies the building of connected systems.
