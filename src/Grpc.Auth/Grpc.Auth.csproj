@@ -5,25 +5,49 @@
 
     <IsGrpcPublishedPackage>true</IsGrpcPublishedPackage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
+  <!-- Clast: the net10.0 target is validated for trimming/AOT. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Clast: republished under a Clast.* identity only when -p:Clast=true (see google-api-dotnet-client Google.Apis.Core.csproj). -->
+  <PropertyGroup Condition="'$(Clast)' == 'true'">
+    <PackageId>Clast.Grpc.Auth</PackageId>
+    <AssemblyName>Clast.Grpc.Auth</AssemblyName>
+    <AssemblyOriginatorKeyFile Condition="'$(ClastKeyPath)' != ''">$(ClastKeyPath)</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" Condition="'$(Clast)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Grpc.Core.Api\Grpc.Core.Api.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Google.Apis.Auth" />
+    <ProjectReference Include="..\..\..\google-api-dotnet-client\Src\Support\Google.Apis.Auth\Google.Apis.Auth.csproj" />
+    <PackageReference Include="Grpc.Core.Api" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <!-- Clast: NuGet metadata stating this is the Clast republish (placed last to override upstream values). -->
+  <PropertyGroup Condition="'$(Clast)' == 'true'">
+    <Title>Clast republish of Grpc.Auth</Title>
+    <Authors>clast-project</Authors>
+    <Company>clast-project</Company>
+    <Copyright>Clast republish. Based on Grpc.Auth (Apache-2.0, Copyright The gRPC Authors).</Copyright>
+    <PackageProjectUrl>https://github.com/clast-project/grpc-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/clast-project/grpc-dotnet</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Clast republish of Grpc.Auth: re-pointed to the Newtonsoft-free, source-generated System.Text.Json Clast.Google.Apis.Auth so the gRPC credential path is trimming/AOT-compatible, with a net10.0 target added. Namespaces and public type names are unchanged. Independent republish from the clast-project fork — not an official gRPC or Google package.</Description>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Clast)' == 'true'">
+    <None Include="..\..\CLAST_NUGET.md" Pack="true" PackagePath="README.md" />
   </ItemGroup>
 
 </Project>
