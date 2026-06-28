@@ -1,0 +1,7 @@
+{
+  "_comment": "Upstream NuGet versions this fork was last synced to. upstream-watch.yml compares nuget.org against these; the Clast sync routine bumps them when it merges upstream. Seeded 2026-06-28 to the then-current upstream stable versions, so the watch fires on the NEXT upstream release.",
+  "upstream": "https://github.com/grpc/grpc-dotnet",
+  "packages": {
+    "Grpc.Auth": "2.80.0"
+  }
+}
