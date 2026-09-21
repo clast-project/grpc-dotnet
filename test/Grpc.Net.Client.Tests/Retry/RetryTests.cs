@@ -1150,10 +1150,24 @@ public class RetryTests
             await MakeGrpcCallAsync(logger, invoker, action);
 
             logger.LogDebug("Waiting for finalizers");
-            for (var i = 0; i < 5; i++)
+            if (expectedUnobservedExceptions > 0)
             {
-                TriggerUnobservedExceptions();
-                await Task.Delay(10);
+                // Wait for this case's exception while its handler is registered. Otherwise, a late
+                // finalizer could raise the exception after the next parameterized case has started.
+                await TestHelpers.AssertIsTrueRetryAsync(() =>
+                {
+                    TriggerUnobservedExceptions();
+                    return unobservedExceptions.Count >= expectedUnobservedExceptions;
+                }, "Wait for unobserved exceptions.", logger);
+            }
+            else
+            {
+                // No event can prove that an exception won't be raised, so use a fixed observation window.
+                for (var i = 0; i < 5; i++)
+                {
+                    TriggerUnobservedExceptions();
+                    await Task.Delay(10);
+                }
             }
 
             foreach (var exception in unobservedExceptions)
