@@ -27,7 +27,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\google-api-dotnet-client\Src\Support\Google.Apis.Auth\Google.Apis.Auth.csproj" />
-    <PackageReference Include="Grpc.Core.Api" />
+    <!-- Clast: pin the Grpc.Core.Api floor. Upstream 2.84.0 raised GrpcDotNetPackageVersion to 2.83.0, which would push this
+         floor above Clast.Google.Api.Gax.Grpc's [2.71.0, 3.0.0) pin and cause NU1605 downgrade errors downstream. -->
+    <PackageReference Include="Grpc.Core.Api" VersionOverride="2.70.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
